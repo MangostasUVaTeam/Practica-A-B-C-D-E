@@ -51,7 +51,7 @@ El codigo será el siguiente:
             exit(-1);
         }
         numh = atoi(argv[1]);
-        for (int i = 0 ; i < numH; i++){
+        for (i = 0 ; i < numH; i++){
             if ((ret = fork()) == 0){ /* hijo */
                 hijo();
                 exit(0);
@@ -88,7 +88,11 @@ Para verificar que la compilación del nucleo se haya realizado correctamente ve
 Tras reiniciar la máquina vimos que no había cambiado nada. Esto es debido a que seguiamos ejecutando la imagen que esta en el disquete por lo que procedemos a apagarla y cambiar el orden de arranque en la configuración de VirtualBox. Ahora si, la versión que corre la máquina es la compilada por nosotros y se muestra el mensaje que habíamos modificado.
 
 
-### X de Febrero de 2015
+### 19 de Febrero de 2015
 
 #### Programación
+Hemos creado la carpeta '/root/PracticaA' que usaremos para trabajar en la parte de programación de esta práctica. Para hacer el programa, hemos creado el fichero 'creaHilos.c'. Tras utilizar un código muy similar al que nos mostró el profesor en clase vemos que funciona correctamente pero nos salen algunos "warnings" que vamos a intentar solventar. Las causas de esto era que simplemente faltaban 'includes' y que en la función hijo no pusimos 'void' como parametro en la función, es decir, no pusimos 'void hijo(void);' Tras tener dificultades debido a que en la función hijo pusimos un 'printf' no veiamos la linea donde 'fork()' devolvia -1, así que estuvimos un buen rato buscando el motivo hasta que se nos ocurrio probar quitando el mensaje, por si había aparecido algo entre medias, y efectivamente, no inidica que el numero máximo de hilos creado es **27**.
+
+
+### xx de Febrero de 2015
 
