@@ -7,6 +7,7 @@ author: garciparedes
 ## Sergio García Prado
 ## Adrián Calvo Rojo
 
+## **Práctica A**
 ### 9 de Febrero de 2015
 
 Hemos empezado a hacer la primera práctica, que consiste en instalar Minix en VirtualBox. Nos hemos descargado los archivos y estamos configurando la maquina virtual. Hemos añadido un nuevo controlador de disquete y también hemos cambiado el orden de arranque para que este lo haga primero. También hemos desactivado el arranque por CD. 
@@ -14,20 +15,21 @@ Hemos empezado a hacer la primera práctica, que consiste en instalar Minix en V
 Procedemos a arrancar la maquina... Pide un login. Nos sentimos confusos. Hemos descubierto que lo que había que hacer es acceder como "root". Hemos descubierto que tecleando 'alt + Fi' se cambia entre los distintos terminales.
  
 #### Tutorial Sobre Vim:
-    - `cursores`	: para moverse
-    - `escape`	    : para usar comandos
-    - `i`  		    : Insertar en la linea.
-    - `u`  		    : Añadir en la linea.
-    - `x` 		    : Sirve para borrar.
-    - `:w` 		    : sirve para guardar.
-    - `:q`		    : Sirve para salir.
-    - `a` 		    : Escribir despues del cursor.
-    - `nyy`        : Copia n lineas desde el cursor
-    - `p`           : pegar
-    - `%`           : cambia el cursor entre la pareja del corchete.
-    - `ndd`         : Borra n lineas desde el cursor
-    - `u`           : Deshacer
-    - `!`           : Forzar comando
+    - 'cursores'	: para moverse
+    - 'escape'	    : para usar comandos
+    - 'i'  		    : Insertar en la linea.
+    - 'u'  		    : Añadir en la linea.
+    - 'x' 		    : Sirve para borrar.
+    - ':w' 		    : sirve para guardar.
+    - ':q'		    : Sirve para salir.
+    - 'a' 		    : Escribir despues del cursor.
+    - 'nyy'        : Copia n lineas desde el cursor
+    - 'p'           : pegar
+    - '%'           : cambia el cursor entre la pareja del corchete.
+    - 'ndd'         : Borra n lineas desde el cursor
+    - 'u'           : Deshacer
+    - '!'           : Forzar comando
+    - 'set nu'      : Muestra el número de líneas
 		
 Como se indica en el guón de la practica, hemos creado una copia de la imagen de Minix y la de disquete. Tras esto hemos cambiado el UUID con el siguiente comando:
 
@@ -93,6 +95,21 @@ Tras reiniciar la máquina vimos que no había cambiado nada. Esto es debido a q
 #### Programación
 Hemos creado la carpeta '/root/PracticaA' que usaremos para trabajar en la parte de programación de esta práctica. Para hacer el programa, hemos creado el fichero 'creaHilos.c'. Tras utilizar un código muy similar al que nos mostró el profesor en clase vemos que funciona correctamente pero nos salen algunos "warnings" que vamos a intentar solventar. Las causas de esto era que simplemente faltaban 'includes' y que en la función hijo no pusimos 'void' como parametro en la función, es decir, no pusimos 'void hijo(void);' Tras tener dificultades debido a que en la función hijo pusimos un 'printf' no veiamos la linea donde 'fork()' devolvia -1, así que estuvimos un buen rato buscando el motivo hasta que se nos ocurrio probar quitando el mensaje, por si había aparecido algo entre medias, y efectivamente, no inidica que el numero máximo de hilos creado es **27**.
 
+## **Práctica B**
+Durante estos días hemos pensado que lo mejor sería leer por separado el todo el código al que se hace referencia en el guión de la práctica, y en el caso de que nos surgiesen dudas resolverlas juntos. Esto es debido a que creemos que para poder entenderlo necesitamos mucha concentración, y esto se hace mejor en solitario. Cuando hayamos comprendido bien como funciona nos pondremos a realizar en común la parte practica de este apartado.
 
-### xx de Febrero de 2015
+### 22 de Febrero de 2015
 
+Las variables en mayúscula se refieren a constantes alfanuméricas.
+
+Siguiendo el guión vemos que la única lo único que hace el fichero '_fork.c' es llamar a la función '_syscall()' con los parámetros apropiados, el primero indica qué tipo de operación se va a realizar, en este caso (MM) que se refiere a *Administración de Memoria*. el segundo sirve para identificar la operación, en este caso (FORK) y el último es la direción a una variable de tipo (message) declarada en el fichero '_fork.c'. En la función '_syscall()' se llama a la función '_sendrec' a la cual se le envia como parámetros 'who' (MM) y 'message' despues de haber definido su 'm_type' como la constante (FORK) en este caso. El resto de esta función sirve para tratar el resultado devuelto por 'sendrec'.
+
+Tras revisar la función '_taskcall' vemos que realiza la misma función pero con un tratamiento de excepciones diferente (devuelve los errores negativamente y no utiliza 'errno'), alegando que es mejor para las operaciones de tipo MM (*Administración de Memoria*) y FS (*Sistema de Ficheros*).
+
+Por tanto pasamos a analizar la función '_sendrec'. Lo primero que nos llama la atención de este fichero (i386/rts/_sendrec.s)es que es dependiente de cada arquitectura. Esto es devido a que está escrito en ensamblador. Lo que hace la función __senrec es mover los parámetros que habiamos enviado a esta función de memoria a registros. Tras esto es cuando se produce la interrupción software, es decir 'int SYSVEC' El argumento que se le pasa es '33', que es el valor de la variable alfanumérica SYSVEC. Es en este punto a partir del cual se entra en *Modo Privilegiado*.
+
+Ahora como indica el guión de la práctica nos dirigimos a 'src/kernel/protect.c' que contiene el código para la inicialización del modo protegido. Una de las cosas que llaman la atención de este fichero es que tiene etiquetas condicionales. Estas son etiquetas para el compilador y se utilizan para que dependiendo de distintos parámetros como por ejemplo la arquitectura el compilador decida si saltarse o no ciertos trozos de código.
+
+Nos dirigimos a la función 'prot_init()' y empezamos a leer su código. Lo primero que hace es configurar las tablas para el modo protegido. Ahora vemos 'SYS386_VECTOR' que está declarado en 'const.h'. Esta vector está definido como 33.
+
+Ahora seguiremos la pista de la función 's_call()' como indica el guión de la práctica.
