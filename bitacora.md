@@ -1,11 +1,9 @@
----
-title: Bitácora Práctica - ESO
-author: garciparedes 
----
 
 # Bitácora Prácticas A+B+C+D+E: 
 ## Sergio García Prado
 ## Adrián Calvo Rojo
+
+## Numero grupo 46
 
 ## **Práctica A**
 ### 9 de Febrero de 2015
@@ -23,13 +21,15 @@ Procedemos a arrancar la maquina... Pide un login. Nos sentimos confusos. Hemos 
     - ':w' 		    : sirve para guardar.
     - ':q'		    : Sirve para salir.
     - 'a' 		    : Escribir despues del cursor.
-    - 'nyy'        : Copia n lineas desde el cursor
+    - 'nyy'         : Copia n lineas desde el cursor
     - 'p'           : pegar
     - '%'           : cambia el cursor entre la pareja del corchete.
     - 'ndd'         : Borra n lineas desde el cursor
     - 'u'           : Deshacer
     - '!'           : Forzar comando
     - 'set nu'      : Muestra el número de líneas
+    - '/[texto]'    : Busca [texto] dentro del fichero
+    - ':100'        : Te lleva hasta la linea 100
 		
 Como se indica en el guón de la practica, hemos creado una copia de la imagen de Minix y la de disquete. Tras esto hemos cambiado el UUID con el siguiente comando:
 
@@ -113,3 +113,17 @@ Ahora como indica el guión de la práctica nos dirigimos a 'src/kernel/protect.
 Nos dirigimos a la función 'prot_init()' y empezamos a leer su código. Lo primero que hace es configurar las tablas para el modo protegido. Ahora vemos 'SYS386_VECTOR' que está declarado en 'const.h'. Esta vector está definido como 33.
 
 Ahora seguiremos la pista de la función 's_call()' como indica el guión de la práctica.
+
+### 25 de Febrero de 2015
+
+Antes de seguir la pista a la función 's_call()', hemos decidido mirar mejor el vector  'SYS386_VECTOR'. Dentro del archivo 'const.h', en la línea 43 esta dicho vector con el número **33** que es el mismo que tenia 'SYSVEC'. Ahora volvemos a la función 's_call()' escrita en ensamblador. Esta función aparentemente crea una pila con los argumentos para despues, con ellos, llamar a otra funcion: 'sys_call()'.
+
+La función 'sys_call()', dentro del fichero '/usr/src/kernel/proc.c' recibe 3 argumentos: el primero puede ser 1 = **SEND**, 2 = **RECEIVE**, 3 = **BOTH** en función de como se quiera usar; el segundo argumento es la fuente a la que se quiere enviar o desde la que se va a recibir el mensaje; el tercero es un puntero al mensaje creado previamente en 'fork()'. En función de los argumentos que haya recibido envía y/o recibe el mensaje con las llamadas a las funciones mini_send() y mini_rec().
+
+Hemos mirado 'proc.h' y creemos que la variable 'proc' es la que indica qué marcos de memoria forman parte del proceso...
+
+Acabamos de darnos cuenta de cómo funciona. Las funciones anteriores ('mini_send()' y 'mini_rec()') laman a una funcion, 'CopyMess()' que a su vez llama a otra, 'cp_mess'. Esta se encarga de convertir una dirección virtual en una direción física y de colocar en la tabla de vectores (TVI) la función que se va a ejecutar que en este caso es 'fork'. Como incluye el fichero '/usr/include/minix/com.h', que posee todas las funciones como constantes, pone en la tabla la funcion 'fork'.
+
+'usr/src/kernel/mpx386s.s' es el fichero encargado de guardar la mayoría del estado de la máquina cuando hay una interrupción y una ve tratada recuperar ese estado.
+
+'table.c' se encarga de redireccionar, en funcion de la tabla, al metodo correspondiente, en este caso a  'sys_task'  que esta en 'system.c' y esta invoca a 'do_fork' que es el metodo llamado al inicio. Por lo tanto, modificando este metodo podemos poner el mensaje.
