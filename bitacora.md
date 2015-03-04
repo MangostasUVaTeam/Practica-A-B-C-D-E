@@ -136,7 +136,26 @@ El parámetro que recibe esta función es el puntero del proceso padre que vamos
 
 Una vez completado todo esto se ejecuta la función ``_restart()`` alojada en ``/usr/src/kernel/mpx386.s/`` que termina el modo privilegiado y vuelve al modo usuario para seguir con normalidad el transcurso del código que ejecutó la función ``fork()``. Para comprobar que este es el camino correcto hemos añadido un sentencia ``printf("Soy un fork");`` en la rutina do_fork() antes mencionada y tras recompilar el nucleo hemos visto que funciona correctamente y se muestra cada vez que se ejecuta un fork en el sistema. Tras comprobar que funciona de manera apropiada comentamos la linea y recompilamos para que no moleste el mensaje.
 
-### xx de Marzo de 2015
+### 4 de Marzo de 2015
 
 ## **Práctica C**
+
+Lo primero que haremos para empezar empezar la práctica es ir al fichero ``/usr/include/minix/callnr.h`` para añadir la nueva instrución que se llama ``ASOPS`` a la cual definimos el valor *77*, por lo que tenemos que incrementar ``NCALLS`` (número de llamadas al sistema) y dejarlo con el valor *78*.
+
+En la función ``main()`` alojada en ``/usr/src/mm/main.c/`` se encuentra el bucle que gestiona la llamadas que son enviadas al *Manejador de Memoria*. Para saber qué llamada es la que se ha realizado se accede a ``call_vec[mm_call]`` que es el vector de punteros que contiene las llamadas a las funciones que se tendrán que ejecutar en cada caso. Por lo tanto, nosotros tenemos que añadir a esta lista de vectores alojada en ``/usr/src/mm/table.c``. Hemos decidido llamarla ``do_asops()``. También hay que añadirla en ``/usr/src/mm/proto.h``, es decir, tenemos que crear el prototipo de la función. Para ello añadimos la línea: ``_PROTOTYPE(int do_asops, (void)   );``.
+
+Como se indica en el guión de la práctica, alojaremos el código de esta función en ``/usr/src/mm/utility.c`` que hemos extraido del guión.
+
+Seguidamente en el fichero ``/usr/src/kernel/system.c`` hemos añadido el prototipo de la función ``do_asopsmessage *m_ptr)``. Tambien añadimos un nuevo *case* al switch que está en la función ``sys_task()`` con la variable alfanumérica ``ASOPS``, y que llama a la función ``do_asops(&m)``. Nos damos cuenta de que el resto de casos son por ejemplo ``SYS_FORK`` y investigado acerca de ello nos damos cuenta de que es por que en el método ``_taskcall`` el segundo parámetro es ``SYS_FORK`` pero en nuestro caso el parámetro pasado es ``ASOPS``.
+
+A continuación nos hemos dispuesto a escribir la función ``do_asops()`` que  lo que hará será mostrar por pantalla el contenido del mensaje y sumar ``m1_i1+m1_i2``  y guardarlo en ``m1_i3``.
+
+ANOTACION: bill_ptr-> variable que tiene el pid del proceso que realizo la llamada al sistema.
+
+Una vez realizado esto hemos compilado el núcleo y ahora empezaremos el programa de prueba ``llamasis.c``. 
+
+### xx de Marzo de 2015
+
+
+
 
