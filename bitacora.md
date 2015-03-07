@@ -13,23 +13,23 @@ Hemos empezado a hacer la primera práctica, que consiste en instalar Minix en V
 Procedemos a arrancar la maquina... Pide un login. Nos sentimos confusos. Hemos descubierto que lo que había que hacer es acceder como "root". Hemos descubierto que tecleando ``alt + Fi`` se cambia entre los distintos terminales.
  
 #### Tutorial Sobre Vim:
-    - ``cursores``	: para moverse
-    - ``escape``	    : para usar comandos
-    - ``i``  		    : Insertar en la linea.
-    - ``u``  		    : Añadir en la linea.
-    - ``x`` 		    : Sirve para borrar.
-    - ``:w`` 		    : sirve para guardar.
-    - ``:q``		    : Sirve para salir.
-    - ``a`` 		    : Escribir despues del cursor.
-    - ``nyy``         : Copia n lineas desde el cursor
-    - ``p``           : pegar
-    - ``%``           : cambia el cursor entre la pareja del corchete.
-    - ``ndd``         : Borra n lineas desde el cursor
-    - ``u``           : Deshacer
-    - ``!``           : Forzar comando
-    - ``set nu``      : Muestra el número de líneas
-    - ``/[texto]``    : Busca [texto] dentro del fichero
-    - ``:100``        : Te lleva hasta la linea 100
+    - cursores	  : para moverse
+    - escape	  : para usar comandos
+    - i  		  : Insertar en la linea.
+    - u  		  : Añadir en la linea.
+    - x 		  : Sirve para borrar.
+    - :w          : sirve para guardar.
+    - :q		  : Sirve para salir.
+    - a 		  : Escribir despues del cursor.
+    - nyy         : Copia n lineas desde el cursor.
+    - p           : pegar
+    - %           : cambia el cursor entre la pareja del corchete.
+    - ndd         : Borra n lineas desde el cursor
+    - u           : Deshacer
+    - !           : Forzar comando
+    - set nu      : Muestra el número de líneas
+    - /[texto]    : Busca [texto] dentro del fichero
+    - :100        : Te lleva hasta la linea 100
 		
 Como se indica en el guón de la practica, hemos creado una copia de la imagen de Minix y la de disquete. Tras esto hemos cambiado el UUID con el siguiente comando:
 
@@ -102,7 +102,7 @@ Durante estos días hemos pensado que lo mejor sería leer por separado el todo 
 
 Las variables en mayúscula se refieren a constantes alfanuméricas.
 
-Siguiendo el guión vemos que la única lo único que hace el fichero ``_fork.c`` es llamar a la función ``_syscall()`` con los parámetros apropiados, el primero indica qué tipo de operación se va a realizar, en este caso (MM) que se refiere a *Administración de Memoria*. el segundo sirve para identificar la operación, en este caso (FORK) y el último es la direción a una variable de tipo (message) declarada en el fichero ``_fork.c``. En la función ``_syscall()`` se llama a la función ``_sendrec`` a la cual se le envia como parámetros ``who`` (MM) y ``message`` despues de haber definido su ``m_type`` como la constante (FORK) en este caso. El resto de esta función sirve para tratar el resultado devuelto por ``sendrec``.
+Siguiendo el guión vemos que lo único que hace el fichero ``_fork.c`` es llamar a la función ``_syscall()`` con los parámetros apropiados, el primero indica qué tipo de operación se va a realizar, en este caso (MM) que se refiere a *Administración de Memoria*. el segundo sirve para identificar la operación, en este caso (FORK) y el último es la direción a una variable de tipo (message) declarada en el fichero ``_fork.c``. En la función ``_syscall()`` se llama a la función ``_sendrec`` a la cual se le envia como parámetros ``who`` (MM) y ``message`` despues de haber definido su ``m_type`` como la constante (FORK) en este caso. El resto de esta función sirve para tratar el resultado devuelto por ``sendrec``.
 
 Tras revisar la función ``_taskcall`` vemos que realiza la misma función pero con un tratamiento de excepciones diferente (devuelve los errores negativamente y no utiliza ``errno``), alegando que es mejor para las operaciones de tipo MM (*Administración de Memoria*) y FS (*Sistema de Ficheros*).
 
@@ -146,7 +146,7 @@ En la función ``main()`` alojada en ``/usr/src/mm/main.c/`` se encuentra el buc
 
 Como se indica en el guión de la práctica, alojaremos el código de esta función en ``/usr/src/mm/utility.c`` que hemos extraido del guión.
 
-Seguidamente en el fichero ``/usr/src/kernel/system.c`` hemos añadido el prototipo de la función ``do_asopsmessage *m_ptr)``. Tambien añadimos un nuevo *case* al switch que está en la función ``sys_task()`` con la variable alfanumérica ``ASOPS``, y que llama a la función ``do_asops(&m)``. Nos damos cuenta de que el resto de casos son por ejemplo ``SYS_FORK`` y investigado acerca de ello nos damos cuenta de que es por que en el método ``_taskcall`` el segundo parámetro es ``SYS_FORK`` pero en nuestro caso el parámetro pasado es ``ASOPS``.
+Seguidamente en el fichero ``/usr/src/kernel/system.c`` hemos añadido el prototipo de la función ``do_asops(message *m_ptr)``. Tambien añadimos un nuevo *case* al switch que está en la función ``sys_task()`` con la variable alfanumérica ``ASOPS``, y que llama a la función ``do_asops(&m)``. Nos damos cuenta de que el resto de casos son por ejemplo ``SYS_FORK`` y investigado acerca de ello nos damos cuenta de que es por que en el método ``_taskcall`` el segundo parámetro es ``SYS_FORK`` pero en nuestro caso el parámetro pasado es ``ASOPS``.
 
 A continuación nos hemos dispuesto a escribir la función ``do_asops()`` que  lo que hará será mostrar por pantalla el contenido del mensaje y sumar ``m1_i1+m1_i2``  y guardarlo en ``m1_i3``.
 
@@ -154,8 +154,21 @@ ANOTACION: bill_ptr-> variable que tiene el pid del proceso que realizo la llama
 
 Una vez realizado esto hemos compilado el núcleo y ahora empezaremos el programa de prueba ``llamasis.c``. 
 
-### xx de Marzo de 2015
+### 7 de Marzo de 2015
 
+Vamos a comenzar a hacer el fichero ``llamasis.c``; importamos las librerias ``lib.h``, ``sys/types.h`` y ``unistd.h``. Hemos creado un metodo main muy simple con una variable de tipo mensaje ``msg`` al que le damos dos atributos ``m1_i1``y ``m1_i2``. Luego llamamos a la función ``_taskcall()`` y vemos que, usando la función creada anteriormente ``ASOPS``, lo envia al sistema correctamente y posteriormente imprimimos las variables modificadas correctamente desde el núcleo.
 
+Segunda Parte:
 
+Vamos a crear ahora nuestra propia llamada, con el nombre ``CUSTOMCALL``. Empezamos modificando el fichero ``/usr/include/minix/callnr.h``. Para ello incrementamos la variable ``NCALLS`` en 1 y definimos nuestra función ``CUSTOMCALL`` con el número **78**. Desde la función ``main()`` se va a llamar a nuestra función. Es llamada a traves del vector de llamadas a funciones``call_vec[mm_call]``, para ello añadimos la llamada en ``/usr/src/mm/table.c``. En ``/usr/src/mm/proto.h`` definimos nuestro prototipo de la función. Ahora en ``/usr/src/mm/utility.c`` creamos la función ``do_customcall()`` que va a reenviar el mensaje a la tarea del sistema situada en el nivel 2.
+Creamos una funcion similar a la anterior pero esta vez solo redirigimos el mensaje con la linea ``_taskcall(SYSTASK, CUSTOMCALL, &mm_in);``. Todas las funciones creadas estan documentadas correctamente en fichero con la misma nomenclatura y estilo que las funciones de minix.
 
+Nos movemos a ``/usr/src/kernel/system.c`` creamos el prototilo de la función ``do_customcall`` y la introducimos al final del switch para que pueda ser llamada. Despues en el mismo fichero, debajo de ``do_asops`` creamos nuestra función. Va a tener un parametro de entrada mediante y un switch se eligira la tarea que se va a realizar. Su funcionamiento será:
+
+* En caso de enviar un 1 mostrará el PID del proceso (pero esto lo programaremos más adelante).
+* Un 0 devuelve "Prueba de llamada personalizada"
+* Si no se envian argumentos o se envia mas de uno, nos pide que introduzcamos uno.
+
+Una vez creado todo lo necesario para hacer la llamada al sistema, en la carpeta ``root/PracticaC`` creamos un fichero en C para probar esta funcion llamado ``customcall.c``. Probamos a compilar el núcleo para comprobar que no sale ningun error. Ha aparecido un error. Volvemos a ``/usr/src/kernel/system.c`` y parece que se nos ha olvidado poner el ``return(OK)``. Tambien en la funcion ``do_customcall`` habiamos puesto un salto del linea en un String (parece que en C no se puede, al contrario que en Java). Al compilar de nuevo el núcleo, compila correctamente. Tras comprobar que todo funciona como debe, volvemos a ``/usr/src/kernel/system.c`` para acabar de programar la función que hará que nos muestre el PID del proceso. 
+
+Creamos una nueva función llamada ``muestra_pid``. Con la variable ``bill_ptr`` obtenemos el PID del proceso que realizo la llamada al sistema y lo mostramos. Compilamos otra vez el núcleo sin problemas. Ahora reiniciamos el sistema y volvemos a nuestro programa en C, ``/root/PracticaC/customcall.c`` y lo compilamos. Lo ejecutamos, le damos el parametro 1 y aparece una cadena de numeros sospechosamente larga, por lo que la la variable ``bill_ptr`` contiene más datos (los que imprime todos) de los que necesitamos (por lo que imprime todos)  al tratarse de un ``struct``. Entonces volvemos a la función que creamos para mostrar el PID y en vez de imprimir todo el ``bill_ptr``, imprimimos ``bill_ptr->p_pid``. Ahora todo funciona correctamente.
