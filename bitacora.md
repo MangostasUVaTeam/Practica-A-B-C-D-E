@@ -163,12 +163,36 @@ Segunda Parte:
 Vamos a crear ahora nuestra propia llamada, con el nombre ``CUSTOMCALL``. Empezamos modificando el fichero ``/usr/include/minix/callnr.h``. Para ello incrementamos la variable ``NCALLS`` en 1 y definimos nuestra función ``CUSTOMCALL`` con el número **78**. Desde la función ``main()`` se va a llamar a nuestra función. Es llamada a traves del vector de llamadas a funciones``call_vec[mm_call]``, para ello añadimos la llamada en ``/usr/src/mm/table.c``. En ``/usr/src/mm/proto.h`` definimos nuestro prototipo de la función. Ahora en ``/usr/src/mm/utility.c`` creamos la función ``do_customcall()`` que va a reenviar el mensaje a la tarea del sistema situada en el nivel 2.
 Creamos una funcion similar a la anterior pero esta vez solo redirigimos el mensaje con la linea ``_taskcall(SYSTASK, CUSTOMCALL, &mm_in);``. Todas las funciones creadas estan documentadas correctamente en fichero con la misma nomenclatura y estilo que las funciones de minix.
 
-Nos movemos a ``/usr/src/kernel/system.c`` creamos el prototilo de la función ``do_customcall`` y la introducimos al final del switch para que pueda ser llamada. Despues en el mismo fichero, debajo de ``do_asops`` creamos nuestra función. Va a tener un parametro de entrada mediante y un switch se eligira la tarea que se va a realizar. Su funcionamiento será:
+Nos movemos a ``/usr/src/kernel/system.c`` creamos el prototipo de la función ``do_customcall`` y la introducimos al final del switch para que pueda ser llamada. Despues en el mismo fichero, debajo de ``do_asops`` creamos nuestra función. Va a tener un parametro de entrada mediante y un switch se eligira la tarea que se va a realizar. Su funcionamiento será:
 
-* En caso de enviar un 1 mostrará el PID del proceso (pero esto lo programaremos más adelante).
-* Un 0 devuelve "Prueba de llamada personalizada"
-* Si no se envian argumentos o se envia mas de uno, nos pide que introduzcamos uno.
+    - En caso de enviar un 1 mostrará el PID del proceso (pero esto lo programaremos más adelante).
+    - Un 0 devuelve "Prueba de llamada personalizada"
+    - Si no se envian argumentos o se envia mas de uno, nos pide que introduzcamos uno.
 
 Una vez creado todo lo necesario para hacer la llamada al sistema, en la carpeta ``root/PracticaC`` creamos un fichero en C para probar esta funcion llamado ``customcall.c``. Probamos a compilar el núcleo para comprobar que no sale ningun error. Ha aparecido un error. Volvemos a ``/usr/src/kernel/system.c`` y parece que se nos ha olvidado poner el ``return(OK)``. Tambien en la funcion ``do_customcall`` habiamos puesto un salto del linea en un String (parece que en C no se puede, al contrario que en Java). Al compilar de nuevo el núcleo, compila correctamente. Tras comprobar que todo funciona como debe, volvemos a ``/usr/src/kernel/system.c`` para acabar de programar la función que hará que nos muestre el PID del proceso. 
 
 Creamos una nueva función llamada ``muestra_pid``. Con la variable ``bill_ptr`` obtenemos el PID del proceso que realizo la llamada al sistema y lo mostramos. Compilamos otra vez el núcleo sin problemas. Ahora reiniciamos el sistema y volvemos a nuestro programa en C, ``/root/PracticaC/customcall.c`` y lo compilamos. Lo ejecutamos, le damos el parametro 1 y aparece una cadena de numeros sospechosamente larga, por lo que la la variable ``bill_ptr`` contiene más datos (los que imprime todos) de los que necesitamos (por lo que imprime todos)  al tratarse de un ``struct``. Entonces volvemos a la función que creamos para mostrar el PID y en vez de imprimir todo el ``bill_ptr``, imprimimos ``bill_ptr->p_pid``. Ahora todo funciona correctamente.
+
+### 11 de Marzo de 2015
+## **Práctica D**
+
+En el fichero ``/src/kernel/clock.c`` está la rutina de servicio de interrupción del reloj. En las colas ``Rdy_head``y ``Rdy_tail`` se alojan los procesos en espera de ejecución. Estas colas aparecen en tres niveles, en el de servicios y en el de tareas son colas de tipo ``FIFO`` (*First in, First out*), mientras que la última está en el nivel de usuario y está gestionada mediante un algoritmo ``Robin Round``. 
+
+Las cuatro funciones más importantes de Minix para la gestión de procesos son las siguientes:
+
+    - sched()
+    - ready()
+    - unready()
+    - pick_proc()
+
+Hay que buscar la porción de código que hace que el último proceso creado es el primero creado.
+
+#### Problema
+
+Debido a un problema con ``git`` al hacer ``commit`` hemos perdido la segunda parte de la práctica C, pero como anotamos todos los pasos en la bitacora tan solo tendremos que repetir los pasos que hemos escrito en ella. ``NCALLS``tendrá el valor **79** con la nueva llamada ``CUSTOMCALL``.
+
+
+
+
+
+
