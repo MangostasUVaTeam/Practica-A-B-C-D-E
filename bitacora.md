@@ -200,14 +200,16 @@ Una vez aquí entramos en el fichero ``proc.c``. Lo primero que nos llama la ate
 Seguidamente vemos la función ``ready()`` es añadir un proceso listo a su correspondiente cola. Para ello  primero obtiene el tipo de proceso que es para saber en cual de las colas lo deberá introducir. Si la correspondiente cola está vacía lo colocara en la posición head, es decir, en la cabeza. Si no es así, lo insertará en la cola. Como en el anterior método, primero se comprueba la cola de tareas, luego la de servidores y por último la de usuarios. Nos llama la atención el código que se encuentra entre un if que se ejecuta si la variable alfanumérica ``SHADOWING`` tiene el valor *1*. Esto activa el uso de una cola adiccional llamada ``SHADOW_Q``.
 
 
-
 La función ``unready()`` sirve para desalojar el proceso de la cola de listos, es decir, según la cola a la que pertenezca (``TASK_Q``,``SERVER_Q`` o ``USER_Q``) da a ``rdy_head[cola]`` el valor del siguiente proceso en dicha cola a través de ``p_nextready``, que es un campo del ``struct proc rp``. Seguidamente llama a ``pick_proc()`` para elegir el siguiente proceso que se ejecutará. En el caso de que el proceso que se quiere extraer de la cola de listos se busca en el cuerpo de la cola y se sustituye por el siguiente listo despues de esto, es decir, se expulsa.
 
 La función ``sched()`` sirve únicamente para procesos de usuario y lo que hace es poner el proceso que está en la cabeza de listos en la cola y el siguiendte de este en la primera posición de la cola. Esta función es llamada cuando un proceso está usando durante mucho tiempo la cpu. Para los procesos de usuario que están en la cola se puedan ejecutar, se pasa el proceso que tarda mucho a la cola de la cola y así se pueden ejecutar los procesos que estaban esperando por él. Seguidamente se llama a ``pick_proc()`` para elegir el proceso que se ejecutará.
 
-Despues de haber comprendido como funcionaban estas funciones y la utildad que tienen accederemos a ``clock.c``. La primera función que revisaremos será ``init_clock()``. Hace que el reloj funcione de manera continua, carga el tiempo en la canal 0 de tiempo, selecciona el capturador de interrupciones del reloj ``clock_handler` y lo activa.
+Despues de haber comprendido como funcionaban estas funciones y la utildad que tienen accederemos a ``clock.c``. La primera función que revisaremos será ``init_clock()``. Hace que el reloj funcione de manera continua, carga el tiempo en la canal 0 de tiempo, selecciona el capturador de interrupciones del reloj ``clock_handler` y lo activa. Este método aparece varias veces por que dependiendo del chipset del computador la forma en que se inicializa es diferente. Para lograr esto se utilizan estructuras condicionales precedidas de **#** para que el compilador elija el fragmento de código a ejecutar según el tipo chip.
 
-La siguiente función que vamos a ver será ``clock_handler)``.
+
+### 18 de Marzo de 2015
+
+La siguiente función que vamos a ver será ``clock_handler())``. Esta función es la encargada de "manejar" el reloj, es decir, ir incrementando el tiempo de los procesos del sistema. Lo primero que hace en el caso de que el chip sea INTEL es  reconocer las interrupciones del reloj.
 
 
 
