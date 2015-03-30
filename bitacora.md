@@ -1,9 +1,8 @@
 
 # Bitácora Prácticas A+B+C+D+E: 
-## Sergio García Prado
-## Adrián Calvo Rojo
-
-## Numero grupo 46
+#### Sergio García Prado
+#### Adrián Calvo Rojo
+#### Grupo 46
 
 ## **Práctica A**
 ### 9 de Febrero de 2015
@@ -206,11 +205,19 @@ La función ``sched()`` sirve únicamente para procesos de usuario y lo que hace
 
 Despues de haber comprendido como funcionaban estas funciones y la utildad que tienen accederemos a ``clock.c``. La primera función que revisaremos será ``init_clock()``. Hace que el reloj funcione de manera continua, carga el tiempo en la canal 0 de tiempo, selecciona el capturador de interrupciones del reloj ``clock_handler` y lo activa. Este método aparece varias veces por que dependiendo del chipset del computador la forma en que se inicializa es diferente. Para lograr esto se utilizan estructuras condicionales precedidas de **#** para que el compilador elija el fragmento de código a ejecutar según el tipo chip.
 
-
 ### 18 de Marzo de 2015
 
-La siguiente función que vamos a ver será ``clock_handler())``. Esta función es la encargada de "manejar" el reloj, es decir, ir incrementando el tiempo de los procesos del sistema. Lo primero que hace en el caso de que el chip sea INTEL es  reconocer las interrupciones del reloj.
+Vamos a crear la aplicación encargada de crear hilos ligeros y pesados para a poder ver la diferencia entre una planificación de procesos mediante un algoritmo **FIFO** y uno **Robin Round**. La aplicación tan solo recibirá un valor **n** por linea de comandos, y creara **n-1** procesos ligeros y uno pesado. Nos referiremos como procesos ligeros a los que tardan 1 segundo aproximadamente y proceso pesado al que tardará unos diez. Para producir una carga de trabajo equivalente hemos hecho un generador de numeros primos en un rango indicado. Los procesos ligeros calculan los números primos entre 100 y 10000 mientras que el pesado lo hace entre 300 y 40000.
 
+La variable ``SCHED_RATE`` es la que almacena el tiempo de ejecución de cada proceso de usuario en el procesador. Su valor es 6, ya que la variable ``HZ``alojada en ``const.h`` tiene el valor **60**. Debido a esto el cuantum asignado a cada proceso de usuario es de *100 milisegundos*.
+
+La siguiente función que vamos a ver será ``clock_handler())``. Esta función es la encargada de "manejar" el reloj, es decir, ir incrementando el tiempo de los procesos del sistema y en el caso de que el tiempo del cuantum se haya terminado. generar una interrupción. Para ello lo primero que hace es dar el valor a ``ticks`` (una variable local) de los ticks perdidos + 1, es decir, el tick actual. Seguidamente se le da a la variable local ``now`` de tipo ``clock_t`` el valor de ``realtime + pending_ticks``. La variable realtime no es actualizada aquí ya que se necesita proteger el sistema, es por ello que esta se actualiza desde ``clock_task``. Este valor es el que se utilizará para comprobar si es necesario que se produzca una interrupción, bien sea por que ``next_alarm <= now`` o por que al proceso se le va a termianr el cuantum. Esto se consigue gracias a la variable ``sched_ticks`` que representa el número restante de ticks que quedan para que se termine el cuantum. Si esta variable llega a cero se vuelve a reiniciar el quantum.
+
+Ahora explicaremos el funcionamiento de ``clock_task()``. Este es el código encargado de gestionar las tareas del reloj. Lo que hace es iniciar el reloj y seguidamente entra en un bucle que se encarga de actualizar la variable ``realtime`` antes citada de forma protegida gracias a las funciones ``lock()`` y ``unlock()``, que están definidas en el fichero ``sunsighandle.c``. Su segunda función es actuar como un distribuidor de funciones de interrupciones relacionadas con el reloj. Nos centraremos en la función ``do_clocktick()`` que es invocada cuando el opcode de es igual a ``HARD_INT``. Luego explicaremos cómo se realiza esta llamada a partir ``interrupt()``.
+
+La función ``do_clocktick()`` a pesar de su nombre no se ejecuta en cada tick. Lo que hace este código es comprobar si se ha producido una alarma y en caso de que haya ocurrido tratarla y tambien se encarga de invocar a la función ``sched()``, que como antes comentabamos se encarga de reorganizar la cola de procesos a la vez que se reinicia la variable ``sched_ticks``.
+
+La proxima función que comentaremos está en el fichero ``proc.c`` y se llama ``interrupt()``. Es invocada cuando el cuantum ha finalizado. En el caso de que ``k_reentrer `` sea distinto de 0 o switching se añade el proceso de usuario a una cola de retenidos. En el caso de que el proceso esté esperando por alguna interrupción se bloquea. Seguidamente se manda el mensaje ``HARD_INT`` citado anteriormente y por último se coloca ``rp`` en la cola de tareas.
 
 
 
