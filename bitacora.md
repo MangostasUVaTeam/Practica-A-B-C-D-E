@@ -229,6 +229,19 @@ Una vez comprobado que el distribuidor está bien codificado, definimos la funci
 
 Tras visualizar el código y repasar bien como se ha llegado hasta ``system.c``, es decir, el nivel de tareas, nos damos cuenta de que el mensaje es mandado a ``SYSTASK``, por lo cual decidimos investigar donde está definida esta constante. Gracias al comando ``grep -n "lo que sea" *`` llegamos al ficher ``/usr/include/minix/com.h`` y gracias a esto, y como sabemos que el reloj es una tarea, descubrimos que para enviar mensajes a la funcion ``clock_task()`` tan solo hay que realizar la misma operación que con ``SYSTASK`` pero esta vez utilizando ``CLOCK``. Al ver que las constantes alfanuméricas utilizadas en este distribuidor están definidas en este fichero (``com.h``) definimos también aquí ``CAMBIAQ`` a la cual hemos decidido asignarle el valor **7**.
 
+Utilizando esta estrategia, que en un principio nos pareció la mejor forma la llamada llega a ``do_cambiaQ()`` pero sin embargo el contenido del mensaje se modifica, por lo cual no podemos hacer que el valor que queremos asignarle al cuantum llegue alli.
+
+La estrategia que vamos a utilizar ahora será llamar directamente a la función desde system.c, que estamos casi seguros de que funcionará. Efectivamente llamando directamente a la función ``do_cambiaQ()`` desde ``system.c`` funciona correctamente. Hemos tenido que modificar la estructura de esta ya que en un principio teniamos pensado que recibiera un ``message`` pero con la remodelación recibe un ``int``. Lo único que hace esta función es dar a la variable ``sched_ticks``, que por defecto es **6** el valor que reciba en la entrada. Para que todo funcione correctamente al hacer el prototipo de la misma en el fichero ``system.c`` hay que prescindir de la "etiqueta" ``FORWARD`` que como está definido en el fichero ``/usr/include/minix/const.h`` hace a la función ``static``, es decir, que la función solo sea accesible desde el fichero en donde está declarada, es por por ello que hemos tenido que eliminar esta etiqueta.
+
+Una vez comprobado que todo funciona correctamente expliquemos los resultados: 
+
+    - Para valores de Q pequeños la planificación de procesos de usuario actua con un algoritmo RR, es decir, por divisiones temporales para cada proceso. Por lo cual, a pesar de que en nuestra prueba el proceso pesado sea el primero en empezar la ejecución, es el que más tarde termina.
+    - Para valores de Q grandes la planificación de procesos de usuario actua como una cola FIFO, es decir, hasta que no termina el proceso que está en ejecución no comienza el siguiente. En el caso de nuestra prueba todos los procesos ligeros, que tienen una duración en la cpu pequeña tiene que esperar a que termine el pesado para poder ejecutarse, es decir, se produce un efecto comboy.
+
+### 3 de Abril de 2015
+## **Práctica E**
+
+
 
 
 
