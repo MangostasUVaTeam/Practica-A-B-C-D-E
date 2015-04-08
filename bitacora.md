@@ -241,7 +241,6 @@ Una vez comprobado que todo funciona correctamente expliquemos los resultados:
 ### 3 de Abril de 2015
 ## **Práctica E**
 
-para imprimir las tablas de segmentación de los procesos de las tareas del sistema hay que acceder a rdy_head(Task) he ir iterando y luego entrar dentro y ver en proc.h que está la p_map
 
 
 
