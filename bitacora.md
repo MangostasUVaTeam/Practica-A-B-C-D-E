@@ -241,8 +241,45 @@ Una vez comprobado que todo funciona correctamente expliquemos los resultados:
 ### 3 de Abril de 2015
 ## **Práctica E**
 
+Para esta práctica primero haremos todas las llamadas al sistema necesarias y después se implementará el código a nivel de usuario. Nos apoyaremos en nuestra función ``CUSTOMCALL``.
 
+Lo primero que hemos hecho ha sido añadir las correspondientes variables alfanuméricas que necesitaremos en el fichero ``/usr/src/include/minix/callnr.h``, que luego utilizaremos en los distintos distribuidores en los que nos apoyaremos.
 
+Una vez hecho esto vamos al fichero ``/usr/src/mm/utility.c/`` y modificamos la función ``do_customcall()``, que era la que usabamos para redirigir las llamadas de memoria al sistema. Lo que haremos aquí será un distribuidor que este compuesto por los siguientes casos:
+
+    - ``PRINT_HOLE_HEAD``
+    - ``PRINT_TASKS_TABLES``
+    - ``PRINT_USERS_TABLES``
+    - ``PRINT_PROC_TABLES``
+    - ``default``: redirige la llamada al sistema, es decir, al distribuidor alli alojado.
+
+Hemos decidido crear un campo para las tareas, para que seá más claro de ver y llamar desde ``mm_init``,  aunque luego haya que redirigirlas al sistema, por que estas no se encuentran en ``mproc[NR_PROCS]``, ya que como indica su propia declaración tan solo hay procesos de usuario.
+
+Comenzamos con la función que imprimirá ``hole_head``. Está función la hemos alojado en ``/usr/src/mm/alloc.c``, que es donde está definido tanto esta, como el ``struct hole``. lo que hace la función ``print_hole_head()`` es "iterar" ``hole_head`` a través de ``->h_next`` hasta que encuentra un agujero nulo (``NIL_HOLE``) y en cada uno de los elementos llama a ``print_hole()`` que imprime en pantalla la base y el tamaño de este. Estos són los dos campos más que tiene el struct ``hole`` junto con ``h_next``. ``hole`` representa los *agujeros libres* en la memoria física.
+
+Seguidamente llamamos a esta función en ``/usr/src/mm/main.c:mm_init`` y tras comprobar que todo funciona correctamente después de compilar y reiniciar (aparecen dos agujeros) continuaremos con las tareas del sistema.
+
+Volvemos al distribuidor alojado en ``/usr/src/mm/utility.c:do_customcall()``  y llamamos a ``print_tasks_seg_tab()``. En este caso como estos procesos no están en la el array ``mproc[]`` por lo mencionado anteriormente tenemos que redirigir la llamada al sistema, a traves de ``CUSTOMCALL`` para acceder a ``pproc_addr[NR_TASKS + NR_PROCS]``, que es un array de tipo ``proc`` que si que contiene todos los procesos. Para ello añadimos un campo más al distribuidor del kernel ``/usr/src/kernel/system.c:do_customcall()`` que llame a la función ``print_seg_tab()`` que hemos alojado en ``/usr/src/kernel/proc.c``. Esta función reocorre ``pproc_addr`` desde el inicio hasta el ``NR_TASK`` y llama a ``print_seg_tables(struct proc *act_proc)`` que se encarga de recorrer ``p_map[NR_SEGS]``, es decir, las tablas de segmentos y llama a ``print_seg`` que es la encargada de imprimir cada uno de los segmentos con los siguientes campos:
+
+    - Direccion virtual.
+    - Direccion física.
+    - Tamaño.
+
+Seguidamente llamamos a la funcion ``/usr/src/mm/utility.c:print_tasks_seg_tab()`` desde ``/usr/src/mm/main.c:mm_init`` y tras comprobar que todo funciona comprovamos que todas las tareas de sistema comparten los mismos segmentos. Esto es debido a que se presupone que el código de las tareas está bien diseñado y no hará cosas sospechosas por lo que no necesita medidas de protección como es el caso de los procesos de usuario.
+
+Ahora vamos a hacer la parte que mostrará las tablas de segmentos de procesos de usuario. Ahora no necesitamos acceder al kernel para hacerlo, es decir, lo podemos hacer desde ``/usr/src/mm``. Para ello llamaremos a ``print_users_seg_table()`` que recorre la variable ``mproc[NR_PROCS]`` y va llamando a ``pr_seg_tab()`` pasandole el proceso en cada caso y a su vez esta por cada una de las tres segmentos de cada proceso alojados en ``mp_seg[NR_SEGS]`` llama a ``pr_seg()``  que imprime cada uno de ellos en pantalla. Como es natural, estás funciones son casi identicas a las que habíamos creado en el kernel para imprimir las tablas de segmentos de las tareas del sistema, con la diferencia de que antes usabamos el ``struct proc`` y ahora lo hacemos con ``struct mproc``. La diferencia entre estos, es que ``mproc`` es algo así como una versión "ligera" (con menos campos) de ``proc`` para hacer más eficiente la gestión de memoria.
+
+Por último nos queda la llamada para que muestre tabla de segmentos del proceso actual, es decir, el que está referenciado en la variable ``mp``, que está declarada en ``/usr/src/mm/glo.h``. Seguimos el mismo procedimiento que en el los anteriores casos, es decir, redirigir desde ``do_systemcall()`` a ``print_proc_seg_table()`` que pasa llama directamente  ``pr_seg_table()`` pero esta vez enviandole ``mp``. El funcionamiento de ``pr_seg_table()`` está indicado anteriormente.
+
+### 5 de Abril de 2015
+
+Ahora que ya están todas las llamadas del sistema implementadas tan solo tenemos que hacer los comandos para utilizarlas. 
+
+Primero creamos el comando ``memLibre`` que muestra los *agujeros libres* en memoria. Como vemos conforme se crean procesos se van apareciendo más agujeros en memoria.
+
+Seguidamente hemos creado el comando que muestra tanto la lista ``hole_head`` como las tablas de segmentos de los procesos de usuario. Para ello realizamos dos llamadas al sistema, una por listado. 
+
+Por último creamos el comando para monitorizar el uso de ``fork``. Tras analizar los resultados comprobamos que al ejecutar ``fork()``, en el caso del padre la localización de las tablas de segmentos siguen en la el mismo lugar que al principio, pero en el caso del hijo, a pesar de que las direcciones virtuales se mantienen, las físicas han cambiado de posición en la memoria. Esto se debe a que al ejecutar ``fork()`` se crea un nuevo proceso lo que conlleva asignarle un nuevo espacio de memoria para él.
 
 
 
