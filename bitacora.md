@@ -1,8 +1,8 @@
 
 # Bitácora Prácticas A+B+C+D+E: 
-#### Sergio García Prado
-#### Adrián Calvo Rojo
-#### Grupo 46
+## Grupo 46
+###### Sergio García Prado
+###### Adrián Calvo Rojo
 
 ## **Práctica A**
 ### 9 de Febrero de 2015
@@ -277,7 +277,7 @@ Ahora que ya están todas las llamadas del sistema implementadas tan solo tenemo
 
 Primero creamos el comando ``memLibre`` que muestra los *agujeros libres* en memoria. Como vemos conforme se crean procesos se van apareciendo más agujeros en memoria.
 
-Seguidamente hemos creado el comando que muestra tanto la lista ``hole_head`` como las tablas de segmentos de los procesos de usuario. Para ello realizamos dos llamadas al sistema, una por listado. 
+Seguidamente hemos creado el comando que muestra tanto la lista ``hole_head`` como las tablas de segmentos de los procesos de usuario. Para ello creamos una llamada al sistema que combina dos de las creadas anteriormente en una sola. 
 
 Por último creamos el comando para monitorizar el uso de ``fork``. Tras analizar los resultados comprobamos que al ejecutar ``fork()``, en el caso del padre la localización de las tablas de segmentos siguen en la el mismo lugar que al principio, pero en el caso del hijo, a pesar de que las direcciones virtuales se mantienen, las físicas han cambiado de posición en la memoria. Esto se debe a que al ejecutar ``fork()`` se crea un nuevo proceso lo que conlleva asignarle un nuevo espacio de memoria para él.
 
