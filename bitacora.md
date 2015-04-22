@@ -1,5 +1,5 @@
 
-# Bitácora Prácticas A+B+C+D+E: 
+# Bitácora Prácticas A+B+C+D+E + Práctica Abierta: 
 ## Grupo 46
 ###### Sergio García Prado
 ###### Adrián Calvo Rojo
@@ -282,6 +282,17 @@ Seguidamente hemos creado el comando que muestra tanto la lista ``hole_head`` co
 Por último creamos el comando para monitorizar el uso de ``fork``. Tras analizar los resultados comprobamos que al ejecutar ``fork()``, en el caso del padre la localización de las tablas de segmentos siguen en la el mismo lugar que al principio, pero en el caso del hijo, a pesar de que las direcciones virtuales se mantienen, las físicas han cambiado de posición en la memoria. Esto se debe a que al ejecutar ``fork()`` se crea un nuevo proceso lo que conlleva asignarle un nuevo espacio de memoria para él.
 
 
+## **Práctica Abierta**
+
+### 22 de Abril de 2015
+
+En esta práctica nos vamos a centrar en el **Sistema de Ficheros** de *Minix*, que creemos que es una parte interesante, además coincide con los siguientes temas que vamos a estudiar en la parte teórica de la asignatura. Tenemos pensado primero entender el funcionamiento del **FS** para seguidamente una vez que comprendamos cómo funciona, hacer pequeñas variaciones en el código de algunas partes. 
+
+La estrategia que seguiremos será analizar primero el fichero ``/usr/src/fs/main.c`` y a partir de ahí seguir describiendo el funcionamiento de las estructuras de datos que nos encontremos (**inode**, **filp**, **super_block**, etc).
+
+Vamos a comenzar con ``/usr/src/fs/main.c``. La primera función que nos encontramos es ``main()`` que como indican los comentarios en su interior contiene el receptor de mensajes del servidor del sistema de ficheros. Antes de hacer esto se inicializa el **FS** en la función ``fs_init()``. Por lo cual primero estudiaremos esta funcion y luego seguiremos con el receptor de mensajes.
+
+En esta función se inicializan las variables globales, tablas, etc. La primera estructura de datos que vemos aquí es **inode**. Esta Estructura está declarada en ``/usr/src/fs/inode.h``  y representa las características de un archivo, directorio, etc. Es decir, es la estructura que representa los atributos. Vemos que los campos de esta estructura tienen tipos definidos en ``/usr/include/sys/types.h``. Aquí comprobamos que a través de *typedef* se "encapsula" el tipo real de las variables. Vemos que por ejemplo **mode_t**, que representa el tipo de fichero a la vez que los bits de permiso, es decir **RWX**. 
 
 
 
