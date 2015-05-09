@@ -341,6 +341,10 @@ Tras realizar distintas pruebas con la nueva llamada al sistema descubrimos que 
 
 ### 9 de Mayo de 2015
 
+En minix, los ficheros tienen el nombre limitado a un determinado tamaño, este tamaño está limitado por la constante alfanumérica ``NAME_MAX`` que está definida en ``/usr/include/limits.h`` y toma el valor **14**, es decir, el nombre de cualquier directorio o fichero no puede superar los 14 carácteres de longitud. También está limitado el tamaño de la ruta completa del fichero, que no puede superar los **255** caracteres como indica la constante ``PATH_MAX``
+
+
+
 
 
 
