@@ -335,3 +335,13 @@ Además de tener los campos citados anteriormente el superbloque tiene también 
     - *s_imap_blocks*   Número de bloques usados por el mapeo de inodos
     - *s_zmap_blocks*   Número de bloques usados por el mapeo de zonas.
 
+Dado que el listado completo de todas (8 como máximo) las ``super_block`` es poco flexible, tanto por que no se pueden ver todas, por la limitación del tamaño de la pantalla, como que hay campos que no se muestran si la estructura no está cargada en memoria, vamos a mejorarlo creando otro campo en nuestro distribuidor que gracias al atributo m1_i2 de los mensajes permitirá seleccionar cual de todas las listas se mostrarán. 
+
+Tras realizar distintas pruebas con la nueva llamada al sistema descubrimos que en minix hay 2 ``super_block`` que están en uso en el sistema, los que se alojan en la primera y última posición de la lista. Esto es algo que nos parece curioso ya que imaginabamos que tan solo habría un único superbloque. Despues de dar unas vueltas a este tema creemos que el super_bloque alojado en la primera posición es el que representa el bloque de arranque, ya que su tamaño es muy pequeño aunque no estamos totalmente seguros de esto.
+
+### 9 de Mayo de 2015
+
+
+
+
+
