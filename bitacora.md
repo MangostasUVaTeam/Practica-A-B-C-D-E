@@ -318,4 +318,20 @@ Ahora que ya conocemos mejor la estructura de minix nos hemos dado cuenta de que
 
 Ahora ya solo nos queda hacer la función do_fscall que será un distribuidor semejante a ``do_asops`` de la práctica anterior. En este caso el mensaje en vez de llegar a partir de de ``mm_in`` como se hacía a través del sistema de memoria, está alojado en ``m``, que está definido en ``/usr/src/fs/glo.h``. 
 
-Una vez comprobado que funciona correctamente seguiremos con la práctica. Lo que queremos hacer es mostrar la lista de ficheros abiertos del sistema.
+### 8 de Mayo de 2015
+
+Una vez comprobado que funciona correctamente seguiremos con la práctica. Lo que queremos hacer es mostrar la estructura ``super_block``, que está alojada en ``/usr/src/fs/super.h``.
+
+Esta estructura es en la que se almacenan los campos correspondientes a los bloques del sistema de ficheros. Contiene el número total de bloques, el número de bloques libres, usados por inodes, el tamaño máximo de fichero que permite el sistema de ficheros...
+
+Varios de estos campos tienen tipos definidos por los desarrolladores del sistema que sirven para encapsular el tipo real y que sea más facil de comprender. Para conocer el tipo real de estas variables hay que dirigirse a ``/usr/include/sys/types.h``.
+
+Además de tener los campos citados anteriormente el superbloque tiene también el ``inode`` que representa la raiz del sistema de ficheros asi como otro ``inode`` al directorio donde se ha montado el sistema de archivos. Procedemos a realizar la función que imprimirá los campos. Esta se alojará en ``/usr/src/fs/super.c`` y la denominaremos ``print_super_list()``. Esta función recorre la lista de superbloques ``super_block[NR_SUPERS]`` y en cada caso llama a ``print_super()`` al que se le pasa como atributo un ``super_block`` y es aquí donde imprimiremos los campos:
+    
+    - *s_dev*           Indica a qué dispositivo se refiere.
+    - *s_zones*         Número de zonas asignadas.
+    - *s_max_size*      Tamaño máximo de fichero permitido.
+    - *s_ninodes*        Numero de inodes disponibles.
+    - *s_imap_blocks*   Número de bloques usados por el mapeo de inodos
+    - *s_zmap_blocks*   Número de bloques usados por el mapeo de zonas.
+
