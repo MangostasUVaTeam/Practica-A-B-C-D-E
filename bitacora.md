@@ -296,7 +296,7 @@ En esta función se inicializan las variables globales, tablas, etc. La primera 
 
 
 ### 6 de Mayo de 2015
-Benya: ""Si añadimos un campo al PCB, se inicializa en do_fork""
+Benjamin: ""Si añadimos un campo al PCB, se inicializa en do_fork""
 
 Continuamos en la función ``fs_init()``. Hace una llamada al método ``buf_pool()``, el cual declara una variable del tipo **buf**, definido en ``/usr/src/fs/buf.h``. Este tipo de estructura es la encargada de inicializar la cache de bloques del **FS**. Esta caché esta formada por varios **buf**. Cuando una rutina llama al método ``get_block()``, un bloque aumenta en 1 la variable ``b_count``, para dar a entender que esta en uso por ese proceso. Los bloques que no estan en uso, se ponen en una lista con el algoritmo LRU de forma que el primero en esta lista será el bloque que mas tiempo haya estado sin utilizarse. En caso de no haber bloques libres, el **FS** buscará en esta lista e ira cogiendo en orden los bloques que necesite.
 
@@ -307,3 +307,15 @@ Despues de ``buf_pool()``, aparece ``get_boot_parameters()`` que hace una llamad
 La siguiente funcion a la que llama ``fs_init`` es ``load_ram()``. Al iniciar MINIX, el unico dispositivo que existe es el raíz, que posee el directorio raiz ``/``, en el que se encuentran todos los demás directorios. El sistema de ficheros raíz puede residir en diskete, en una partición del disco duro, o en disco RAM. Si el dispositivo raiz se indica que reside en disco RAM, deberá disponerse una copia, de tal forma que al finalizar la carga del sistema dicha copia ha de traslade al disco RAM. Esta copia se realiza bloque por bloque y el tamaño usado en la RAM es el mismo que el de la imagen del dispositivo raiz. La forma más común de ubicar esta imagen es en una partición del disco duro, ya que si por ejemplo copiamos MINIX desde un diskette al disco RAM, y modificamos en el disco RAM, estas modificaciones se perderán. En el caso de que el disco RAM no se haya definido como el dispositivo raíz, solamente asigna un disco RAM con los parametros de arranque, que se han cargado en la función anterior.
 
 La ultima funcion llamada es ``load_super()``,
+
+### 7 de Mayo de 2015
+
+A partir de ahora vamos a pasar a la parte práctica de la tarea, para ello vamos a montar una llamada al *Sistema de Ficheros* de minix para realizar distintas acciones tal y como hicimos con las llamadas al *Sistema de Memoria*.
+
+La llamada la determinaremos como ``FSCALL``. Lo primero que vamos a hacer es declararla en ``/usr/include/minix/callnr.h`` e incrementar el valor de ``NRCALLS``. Seguidamente añadimos una entrada en ``/usr/src/fs/table.c:call_vector[NCALLS]`` que es quién reenviará la llamada a una función del sistema de ficheros. A esta la vamos a llamar ``do_fscall`` y estará alojada en ``/usr/src/fs/utility.c``. Lo único que nos queda antes de crear la función será definir su prototipo en ``usr/src/fs/proto.h``.
+
+Ahora que ya conocemos mejor la estructura de minix nos hemos dado cuenta de que aquí es donde se tienen que alojar todos los prototipos de las funciones a las cuales se puede acceder desde un fichero diferente, mientras que cuando el prototipo se define en el propio fichero este debe ir acompañadao de ``FORWARD`` que hace *static* la función, es decir, accesible unicamente desde el propio fichero.
+
+Ahora ya solo nos queda hacer la función do_fscall que será un distribuidor semejante a ``do_asops`` de la práctica anterior. En este caso el mensaje en vez de llegar a partir de de ``mm_in`` como se hacía a través del sistema de memoria, está alojado en ``m``, que está definido en ``/usr/src/fs/glo.h``. 
+
+Una vez comprobado que funciona correctamente seguiremos con la práctica. Lo que queremos hacer es mostrar la lista de ficheros abiertos del sistema.
