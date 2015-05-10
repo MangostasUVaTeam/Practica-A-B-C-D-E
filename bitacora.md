@@ -339,11 +339,24 @@ Dado que el listado completo de todas (8 como máximo) las ``super_block`` es po
 
 Tras realizar distintas pruebas con la nueva llamada al sistema descubrimos que en minix hay 2 ``super_block`` que están en uso en el sistema, los que se alojan en la primera y última posición de la lista. Esto es algo que nos parece curioso ya que imaginabamos que tan solo habría un único superbloque. Despues de dar unas vueltas a este tema creemos que el super_bloque alojado en la primera posición es el que representa el bloque de arranque, ya que su tamaño es muy pequeño aunque no estamos totalmente seguros de esto.
 
+Tras reiniciar el sistema nos hemos fijado que se añade un punto de montaje en ``/usr`` así que está podría ser realmente la causa de que haya 2 superbloques, es decir, que el código fuente de minix esté alojado en una partición diferente de la del resto del sistema.
+
 ### 9 de Mayo de 2015
 
 En minix, los ficheros tienen el nombre limitado a un determinado tamaño, este tamaño está limitado por la constante alfanumérica ``NAME_MAX`` que está definida en ``/usr/include/limits.h`` y toma el valor **14**, es decir, el nombre de cualquier directorio o fichero no puede superar los 14 carácteres de longitud. También está limitado el tamaño de la ruta completa del fichero, que no puede superar los **255** caracteres como indica la constante ``PATH_MAX``
 
+Tras observar el código nos damos cuenta de que no se utilizan los atributos de ``message`` directamente sino que para que el código sea más legible se han definido etiquetas en ``/usr/src/fs/param.h`` para acceder a los campos de ``message m`.
 
+La siguiente tarea que haremos es crear un comando que muestre información del directorio donde estamos alojados, es decir, algunos de los campos más significativos de su correspondiente inode, para ello tenemos que acceder al campo ``fp_workdir`` de la estructura ``fproc`` alojada en ``/usr/src/fs/fproc.h`` que es quien representa a los procesos en el sistema de memoria, para acceder al proceso correspondiente utilizaremos ``fp`` que es un puntero al proceso que realiza la llamada al sistema. 
+Una vez entendido todo esto vamos a proceder a escribir el código, para ello lo primero que haremos será crear una nueva constante que representará esta llamada el ``/usr/include/minix/com.h`` que denominaremos ``WORK_FOLDER_INFO``. Añadiremos una nueva entrada en nuestro distribuidor localizado en ``/usr/src/fs/utility.c/do_fscall()``. Añadimos el correspondiente prototipo en ``proto.h`` y como queremos intentar crear el comando para una ruta indicada la función que crearemos en ``inode.c`` y denominaremos ``print_inode_info`` recibirá como parámetro un inode. 
+
+Esto es debido a que una vez que tengamos esta parte resuelta queremos mejorar el comando haciendo que se le envie la ruta de un determinado fichero o directorio y se muestre información de ese determinado inodo.
+
+Tras comprobar que todo funciona correctamente y gracias al campo de dispositivo hemos deducido que efectivamente, existen dos particiones y una de ellas se monta en ``/usr`` ya que el identificador de dispositivo de sus inodos es diferente del resto de los directorios del sistema. Para poder probarlo hemos accedido a nuestra llamada al sistema a traves de rutas relativas desde un ``/usr/src`` hasta ``/root/practica_abierta/inodes/folder_info``. Como esta manera es más compleja para el usuario ya que si no se conoce bien la jerarquía de directorios es facil equivocarse navegando con **..**  y limita el uso a solo directorios vamos a intentar hacer el mismo comando pero especificando nosotros la ruta del fichero.
+
+### 10 de Mayo de 2015
+
+Vamos a investigar como es el paso de una ruta (``PATH``)determinada a su corresponiente inodo. Sabemos que esto se hace a través de la función ``eat_path`` alojada en ``/usr/src/fs/path.c``. Ahora analizaremos detenidamente cómo se obtiene el inode.
 
 
 
