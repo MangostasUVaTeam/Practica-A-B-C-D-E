@@ -366,5 +366,37 @@ Lo primero que hacemos es localizar la definición de ``message`` que está en `
 
 Ahora que ya hemos realizado esto nos dirigimos a ``/usr/src/fs/param.h`` para definir ``pathmessage`` con el valor de ``m7_ca1``. Tras recompilar el nucleo y reiniciar el sistema este "casca". Gracias al uso de un control de versiones no hemos perdido el trabajo realizado hasta ahora pero tras probar ahora solo modificando la parte de ``message`` sigue ocurriendo lo mismo por lo cual esta no es la solución adecuada, y muy probablemente con la otra ocurriría lo mismo utilizando la otra opción que en un principio descartamos.
 
+### 13 de Mayo de 2015
 
+Vamos a explicar como se produce la conversión de una *ruta* (path) a un *inodo*. Todo esto comienza, como mencionamos antes, en la función ``eat_dir`` alojada en ``/usr/src/fs/path.c``. Para que sea más facil de explicar primero describiremos una función completamente y después las funciones más relevantes que se llaman dentro de esta, y así recursivamente.
 
+La función ``eat_path`` recibe un *string* y devuelve un *inode*. Lo que hace es declarar dos variables internas de tipo *inode*. ``ldip`` apunta al directorio donde se encuentra alojado el objeto(fichero u otro directorio) del que se quiere recibir el *inodo*. También se usa otra variable ``string`` que es donde se aloja el nombre del objeto del que se quiere saber su *inodo*. Esto se obtiene a través de la función ``last_dir`` que explicaremos a continuación. Con estos dos valores devueltos se llama a ``advance` que es quien devuelve el *inodo* de la *ruta*, es decir, es quien busca en el directorio el inodo. 
+
+A lo largo de todas estas funciones vemos una función que se llama a menudo denominada ``put_inode``. Esta está definida en ``/usr/src/fs/inode.c``. Está función sirve para desalojar de la memoria un *inodo* y almacenarlo en el disco.
+
+La siguiente función que describiremos es ``last_dir`` que como ya dijimos antes es la encargada de devolver el *inodo* del último directorio y extraer el nombre del objeto (fichero o directorio) final. Lo primero que hace es comprobar si la ruta es absoluta o relativa y según sea el caso extrae de variable ``fp`` que apunta a la entrada de la estructura ``fproc`` del proceso actual. Seguidamente se comprueba si el directorio raiz o el actual, según se haya elegido anteriormente, está vacío o ha sido borrado, en cuyo caso se aborta la operación devolviendo un *inodo* nulo. También se llama a la ``dup_inode`` que sirve para incrementar el número de veces que ha sido usado un determinado *inodo* (Definida en ``/usr/src/fs/inode.c``). Ahora es cuando realmente se accede al *último directorio*. Para ello hay un bucle infinito que va extrayendo el nombre de los directorios a través de ``get_name`` y gracías a ``advance`` se va accediendo a los distintos niveles, hasta que ya se está en el más profundo, que es cuando se comprueba si se ha llegado a un directorio a gracias al campo ``i_mode`` y se devuelve el *inodo*.
+
+``fproc`` es la estructura que representa a los procesos en el sistema de ficheros. Se localiza en ``/usr/src/fs/fproc.h`` En esta estructura se localizan campos como el *inodo* del directorio raiz y de trabajo, el identificador de usuario y de grupo del proceso, la tabla de descriptores de ficheros de ese proceso, etc. Esta última es un array de tipo ``filp``. La definición de *filp* se localiza en ``/usr/src/fs/file.h`` y contiene campos como el modo de apertura del fichero, cuantas veces está abierto, un puntero a su respectivo *inodo*, etc.
+
+Seguidamente describiremos ``advance`` que es la función encargada de acceder a un determinado objeto (fichero o directorio) con el nombre ``string`` y alojado en el directorio al que apunta el *inodo* ``dirp``. Primero hace algunas comprobaciones y seguidamente se llama a ``search_dir`` que a través de la variable ``numb`` recibe el numero de inodo que luego se busca en la tabla de inodos gracias a la función ``get_inode``. Una vez se tiene el *inodo* se comprueba si corresponde a un punto de montaje en cuyo caso se intercambia el *inodo* por el de la raiz del sistema de ficheros montado.
+
+### 14 de Mayo de 2015
+
+La función ``get_inode`` realiza una busqueda por el array de *inodos* ``inode[]`` hasta que encuentra una coincidencia del identificador de dispositivo y del número de inodo.
+
+La siguiente función que analizaremos será ``search_dir`` pero antes de nada vamos a explicar dos estructuras de datos que son usadas en esta función:
+
+``direct`` es la estructura que se encarga de emparejar el nombre del objeto (fichero o directorio) con la posicion del inodo. Está definida en ``/usr/include/sys/dir.h``.
+
+``buf`` es como su propio nombre indica un buffer que está formada por un union a la vez que punteros al proximo, siguiente, hash y también otros campos como el número de bloque en el que reside. El campo que más importante nos resulta para la tradución de una ruta a su correspondiente Inodo es el array ``b_dir[]`` que es de tipo ``direct`` y contiene los descriptores del directorio donde queremos buscar el fichero. Esta estructura está definida en ``/usr/src/fs/buf.h``.
+
+Ahora si, vamos a describir la función ``search_dir`` que según el valor que se pase por ``flag`` tiene 4 usos:
+
+    -   Añadir una entrada ``string`` al directorio ``ldir_ptr``.
+    -   Eliminar una entrada ``string`` del directorio ``ldir_ptr``.
+    -   Buscar la entrada ``string``del directorio ``ldir_ptr`` y devolver su posición en la tabla de *inodos*.
+    -   Comprobar si el directorio ``ldir_ptr`` está vacío.
+
+La que nos importa en este caso es la de buscar la entrada, que como se ha explicado una vez se tiene el ``buf`` correspondiente, se recorre la variable ``b_dir`` hasta que se da con la coincidencia. Una vez hecho esto se extrae del ``direct`` el número de inodo que se encuentra en el campo ``ino_t``.
+
+Así es como el sistema de ficheros de minix convierte una cadena de caracteres de con la ruta de un fichero a su correspondiente *inodo* para después poder acceder a él.
