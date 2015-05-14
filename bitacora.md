@@ -399,4 +399,4 @@ Ahora si, vamos a describir la función ``search_dir`` que según el valor que s
 
 La que nos importa en este caso es la de buscar la entrada, que como se ha explicado una vez se tiene el ``buf`` correspondiente, se recorre la variable ``b_dir`` hasta que se da con la coincidencia. Una vez hecho esto se extrae del ``direct`` el número de inodo que se encuentra en el campo ``ino_t``.
 
-Así es como el sistema de ficheros de minix convierte una cadena de caracteres de con la ruta de un fichero a su correspondiente *inodo* para después poder acceder a él.
+Así es como el sistema de ficheros de minix convierte una cadena de caracteres con la ruta de un fichero a su correspondiente *inodo* para después poder acceder a él.
